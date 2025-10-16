@@ -48,6 +48,21 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             allBookmarks.clear();
             break;
         }
+        case "finishListBackup": {
+            const urls = Array.isArray(message.urls) ? message.urls : [];
+            const count = urls.length;
+            const listItems = urls.map(u => `<li><a href="${u}">${u}</a></li>`).join("");
+            const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>트위터 리스트 백업</title></head><body><h1>트위터 리스트 백업</h1><p>총 ${count}개</p><ul>${listItems}</ul></body></html>`;
+            const dataUrl = "data:text/html;charset=utf-8," + encodeURIComponent(html);
+            chrome.downloads.download({
+                url: dataUrl,
+                filename: `twitter_lists_backup_${Date.now()}.html`,
+                saveAs: true
+            }, () => {
+                chrome.runtime.sendMessage({ action: "listBackupComplete", count });
+            });
+            break;
+        }
         default:
             break;
     }

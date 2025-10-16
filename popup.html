@@ -88,7 +88,17 @@
             box-shadow: 0 6px 20px rgba(255, 107, 107, 0.6);
             background: linear-gradient(45deg, #FF5555, #FF7A7A);
         }
-
+        #backupLists {
+            background: white;
+            color: skyblue;
+            box-shadow: 0 4px 15px rgba(85, 205, 252, 0.4);
+        }
+        #backupLists:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(85, 205, 252, 0.6);
+            background: #e0f7fa;
+            
+        }
         button:active {
             transform: translateY(0px);
         }
@@ -132,6 +142,7 @@
     <button id="backupFollows">팔로우 목록 백업 시작</button>
     <button id="backupBookmarks">북마크 백업</button>
     <button id="stopBookmarks">북마크 백업 중단</button>
+    <button id="backupLists">리스트 백업</button>
     <p id="status">트위터 팔로잉, 북마크 페이지에서 실행하세요.</p>
     <script src="popup.js"></script>
 </body>

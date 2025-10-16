@@ -229,6 +229,125 @@ async function autoScrollAndExtractBookmarks() {
     cancelBookmarkRequested = false;
 }
 
+// 리스트 백업 상태
+let isListExtractionRunning = false;
+let extractedListUsers = new Set();
+
+/**
+ * 리스트 페이지에서 아바타 컨테이너의 data-testid 값으로부터 유저네임을 추출
+ * 대상: div[data-testid^="UserAvatar-Container-"]
+ * 예: data-testid="UserAvatar-Container-jack" -> username "jack" -> https://x.com/jack
+ */
+function extractListUsers() {
+    const AVATAR_SELECTOR = 'div[data-testid^="UserAvatar-Container-"]';
+    const nodes = document.querySelectorAll(AVATAR_SELECTOR);
+    let newlyFound = 0;
+
+    nodes.forEach(node => {
+        try {
+            const raw = node.getAttribute('data-testid');
+            if (!raw) return;
+            const username = raw.replace(/^UserAvatar-Container-/, '').trim();
+            if (!username) return;
+            const url = `https://x.com/${username}`;
+            if (!extractedListUsers.has(url)) {
+                extractedListUsers.add(url);
+                newlyFound++;
+            }
+        } catch (e) {
+            console.error('리스트 유저 추출 중 오류:', e);
+        }
+    });
+
+    return newlyFound;
+}
+
+// 리스트 멤버 페이지 가드
+function isOnListMembersPage() {
+    try {
+        const url = new URL(window.location.href);
+        return (
+            url.hostname === 'x.com' &&
+            url.pathname.startsWith('/i/lists/') &&
+            url.pathname.endsWith('/members')
+        );
+    } catch (e) {
+        return false;
+    }
+}
+/**
+ * 리스트 전용 무한 스크롤 + 추출 루프
+ */
+async function autoScrollAndExtractList() {
+    if (isListExtractionRunning) return;
+    isListExtractionRunning = true;
+    console.log('리스트 백업 추출 시작...');
+    
+    // URL 가드: x.com/i/lists/.../members 에서만 실행
+    if (!isOnListMembersPage()) {
+        chrome.runtime.sendMessage({
+            action: "backupError",
+            message: "리스트 멤버 페이지(x.com/i/lists/.../members)에서 실행하세요."
+        });
+        isListExtractionRunning = false;
+        return;
+    }
+
+    const container = document.querySelector(SCROLL_CONTAINER_SELECTOR);
+    if (!container) {
+        chrome.runtime.sendMessage({ action: "backupError", message: "리스트 컨테이너를 찾을 수 없습니다. 셀렉터 확인 필요." });
+        isListExtractionRunning = false;
+        return;
+    }
+
+    let lastHeight = container.scrollHeight;
+    let noNewCount = 0;
+    let scrollCount = 0;
+
+    // 초기 한 번 추출
+    extractListUsers();
+
+    while (scrollCount < MAX_SCROLL_COUNT) {
+        // 스크롤
+        window.scrollBy({ top: 900, left: 0, behavior: 'instant' });
+        await delay(1000);
+
+        // 추출
+        const newItems = extractListUsers();
+        if (newItems > 0) {
+            noNewCount = 0;
+        } else {
+            noNewCount++;
+        }
+
+        // 높이 변화 감지
+        const newHeight = container.scrollHeight;
+        if (newHeight === lastHeight) {
+            if (noNewCount >= 3) {
+                console.log('리스트 스크롤 끝 감지, 새로운 항목 없음.');
+                break;
+            }
+        } else {
+            lastHeight = newHeight;
+        }
+
+        // 안정성 종료
+        if (noNewCount >= 10) {
+            console.log('10회 연속 새 리스트 항목 없음. 종료.');
+            break;
+        }
+
+        scrollCount++;
+    }
+
+    // 결과 전송
+    const urls = Array.from(extractedListUsers.values());
+    chrome.runtime.sendMessage({ action: "finishListBackup", urls });
+    // 상태 초기화
+    extractedListUsers.clear();
+    isListExtractionRunning = false;
+}
+
 // 팝업에서 메시지를 받으면 시작
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === "startBackup") {
@@ -242,6 +361,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     } else if (request.action === 'stopBookmarkBackup') {
         if (!isBookmarkExtractionRunning) return;
         cancelBookmarkRequested = true;
+    } else if (request.action === "startListBackup") {
+        if (isListExtractionRunning) return;
+        console.log("리스트 백업 스크립트 실행. 스크롤 시작.");
+        autoScrollAndExtractList();
     }
 });
 
