@@ -2,7 +2,6 @@ document.getElementById('backupFollows').addEventListener('click', () => {
   const statusElement = document.getElementById('status');
   statusElement.textContent = '백업 중...';
 
-  // 현재 활성화된 탭에 메시지를 보낼 준비
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     if (tabs.length === 0) {
       statusElement.textContent = '오류: 활성화된 탭이 없습니다.';
@@ -10,13 +9,15 @@ document.getElementById('backupFollows').addEventListener('click', () => {
     }
     const tabId = tabs[0].id;
 
-    // content_script를 주입하고, 실행 후, service_worker에게 결과를 전달하도록 지시
-    chrome.scripting.executeScript({
-      target: { tabId: tabId },
-      files: ['content_script.js']
-    }, () => {
-      // Content Script가 주입된 후, Content Script에게 작업을 시작하라는 메시지를 보냄
-      chrome.tabs.sendMessage(tabId, { action: "startBackup" });
+    // 1) 에뮬레이션 ON
+    chrome.runtime.sendMessage({ action: 'enableEmulation', tabId, preset: 'galaxyFold5' }, () => {
+      // 2) content_script 주입 후 작업 시작
+      chrome.scripting.executeScript({
+        target: { tabId: tabId },
+        files: ['content_script.js']
+      }, () => {
+        chrome.tabs.sendMessage(tabId, { action: "startBackup" });
+      });
     });
   });
 });
@@ -24,7 +25,6 @@ document.getElementById('backupBookmarks').addEventListener('click', () => {
   const statusElement = document.getElementById('status');
   statusElement.textContent = '북마크 백업 중...';
 
-  // 현재 활성화된 탭에 메시지를 보낼 준비
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     if (tabs.length === 0) {
       statusElement.textContent = '오류: 활성화된 탭이 없습니다.';
@@ -32,13 +32,13 @@ document.getElementById('backupBookmarks').addEventListener('click', () => {
     }
     const tabId = tabs[0].id;
 
-    // content_script를 주입하고, 실행 후, service_worker에게 결과를 전달하도록 지시
-    chrome.scripting.executeScript({
-      target: { tabId: tabId },
-      files: ['content_script.js']
-    }, () => {
-      // Content Script가 주입된 후, Content Script에게 작업을 시작하라는 메시지를 보냄
-      chrome.tabs.sendMessage(tabId, { action: "startBookmarkBackup" });
+    chrome.runtime.sendMessage({ action: 'enableEmulation', tabId, preset: 'galaxyFold5' }, () => {
+      chrome.scripting.executeScript({
+        target: { tabId: tabId },
+        files: ['content_script.js']
+      }, () => {
+        chrome.tabs.sendMessage(tabId, { action: "startBookmarkBackup" });
+      });
     });
   });
 });
@@ -46,7 +46,6 @@ document.getElementById('backupLists').addEventListener('click', () => {
   const statusElement = document.getElementById('status');
   statusElement.textContent = '백업 중...';
 
-  // 현재 활성화된 탭에 메시지를 보낼 준비
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     if (tabs.length === 0) {
       statusElement.textContent = '오류: 활성화된 탭이 없습니다.';
@@ -54,13 +53,13 @@ document.getElementById('backupLists').addEventListener('click', () => {
     }
     const tabId = tabs[0].id;
 
-    // content_script를 주입하고, 실행 후, service_worker에게 결과를 전달하도록 지시
-    chrome.scripting.executeScript({
-      target: { tabId: tabId },
-      files: ['content_script.js']
-    }, () => {
-      // Content Script가 주입된 후, Content Script에게 작업을 시작하라는 메시지를 보냄
-      chrome.tabs.sendMessage(tabId, { action: "startListBackup" });
+    chrome.runtime.sendMessage({ action: 'enableEmulation', tabId, preset: 'galaxyFold5' }, () => {
+      chrome.scripting.executeScript({
+        target: { tabId: tabId },
+        files: ['content_script.js']
+      }, () => {
+        chrome.tabs.sendMessage(tabId, { action: "startListBackup" });
+      });
     });
   });
 });
@@ -88,3 +87,5 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     document.getElementById('status').textContent = `리스크 백업 완료.`;
   }
 });
+
+// 수동 디바이스 에뮬레이션 UI 제거에 따라 관련 코드 삭제됨
