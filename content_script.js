@@ -162,7 +162,7 @@ function extractBookmarks() {
 
 
 
-const MAX_SCROLL_COUNT = 1000; // 최대 스크롤 횟수 설정 (무한 루프 방지)
+const MAX_SCROLL_COUNT = 3000; // 최대 스크롤 횟수 설정 (무한 루프 방지)
 
 // 북마크 추출 전용 무한 스크롤 및 추출 함수
 async function autoScrollAndExtractBookmarks() {
@@ -207,7 +207,7 @@ async function autoScrollAndExtractBookmarks() {
         // 4. 높이 비교로 끝 검출
         const newHeight = container.scrollHeight;
         if (newHeight === lastHeight) {
-            if (noNewItemsCount >= 3) {
+            if (noNewItemsCount >= 8) {
                 console.log("스크롤의 끝에 도달했으며, 새로운 북마크가 로드되지 않았습니다.");
                 break;
             }
@@ -216,8 +216,8 @@ async function autoScrollAndExtractBookmarks() {
         }
 
         // 5. 안정성 종료 조건
-        if (noNewItemsCount >= 10) {
-            console.log("10회 연속으로 새 북마크 추출 실패. 스크래핑 종료.");
+        if (noNewItemsCount >= 8) {
+            console.log("8회 연속으로 새 북마크 추출 실패. 스크래핑 종료.");
             break;
         }
 
