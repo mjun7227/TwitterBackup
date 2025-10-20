@@ -104,7 +104,7 @@ async function autoScrollAndExtract(scrollLimit = 500) {
         // 4. 종료 조건 확인:
         if (newHeight === lastHeight) {
             // 스크롤 높이 변화 없고 (페이지 끝 도달) 새 사용자도 없으면 종료
-            if (noNewUsersCount >= 3) { 
+            if (noNewUsersCount >= 6) { 
                  console.log("스크롤의 끝에 도달했으며, 새로운 사용자가 로드되지 않았습니다.");
                  break;
             }
@@ -112,7 +112,7 @@ async function autoScrollAndExtract(scrollLimit = 500) {
             lastHeight = newHeight;
         }
 
-        if (noNewUsersCount >= 10) { 
+        if (noNewUsersCount >= 6) { 
              // 10회 연속으로 새 사용자 찾기 실패 시 (안정성 확보를 위한 조건) 강제 종료
              console.log("10회 연속으로 새 사용자 추출 실패. 스크래핑 종료.");
              break;
@@ -323,7 +323,7 @@ async function autoScrollAndExtractList() {
         // 높이 변화 감지
         const newHeight = container.scrollHeight;
         if (newHeight === lastHeight) {
-            if (noNewCount >= 3) {
+            if (noNewCount >= 6) {
                 console.log('리스트 스크롤 끝 감지, 새로운 항목 없음.');
                 break;
             }
@@ -332,8 +332,8 @@ async function autoScrollAndExtractList() {
         }
 
         // 안정성 종료
-        if (noNewCount >= 10) {
-            console.log('10회 연속 새 리스트 항목 없음. 종료.');
+        if (noNewCount >= 6) {
+            console.log('6회 연속 새 리스트 멤버 항목 없음. 종료.');
             break;
         }
 
