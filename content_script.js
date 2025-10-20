@@ -113,7 +113,7 @@ async function autoScrollAndExtract(scrollLimit = 500) {
         }
         // 5.안정성 종료 조건 
         if (noNewUsersCount >= 6) { 
-             // 10회 연속으로 새 사용자 찾기 실패 시 (안정성 확보를 위한 조건) 강제 종료
+             // 6회 연속으로 새 사용자 찾기 실패 시 (안정성 확보를 위한 조건) 강제 종료
              console.log("6회 연속으로 새 사용자 추출 실패. 스크래핑 종료.");
              break;
         }
