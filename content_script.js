@@ -284,6 +284,7 @@ async function autoScrollAndExtractList() {
     console.log('리스트 백업 추출 시작...');
     
     // URL 가드: x.com/i/lists/.../members 에서만 실행
+    /*
     if (!isOnListMembersPage()) {
         chrome.runtime.sendMessage({
             action: "backupError",
@@ -292,6 +293,7 @@ async function autoScrollAndExtractList() {
         isListExtractionRunning = false;
         return;
     }
+    */
 
     const container = document.querySelector(SCROLL_CONTAINER_SELECTOR);
     if (!container) {
